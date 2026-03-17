@@ -3,6 +3,8 @@ import glob
 
 class Triangle:
     def __init__(self, a, b, c):
+        assert a > 0 and b > 0 and c > 0
+        assert a + b > c and a + c > b and b + c > a
         self.a, self.b, self.c = a, b, c
     def perimeter(self):
         return self.a + self.b + self.c
@@ -14,6 +16,7 @@ class Triangle:
 
 class Rectangle:
     def __init__(self, a, b):
+        assert a > 0 and b > 0
         self.a, self.b = a, b
     def perimeter(self):
         return 2 * (self.a + self.b)
@@ -22,6 +25,8 @@ class Rectangle:
 
 class Trapeze:
     def __init__(self, a, b, m, n): 
+        assert a > 0 and b > 0 and m > 0 and n > 0
+        assert m + n > abs(a - b) and abs(a - b) + m > n and abs(a - b) + n > m
         self.a, self.b, self.m, self.n = a, b, m, n
     def perimeter(self): 
         return self.a + self.b + self.m + self.n
@@ -35,6 +40,7 @@ class Trapeze:
 
 class Parallelogram:
     def __init__(self, a, b, h):
+        assert a > 0 and b > 0 and h > 0
         self.a, self.b, self.h = a, b, h
     def perimeter(self):
         return 2 * (self.a + self.b)
@@ -43,6 +49,7 @@ class Parallelogram:
 
 class Circle:
     def __init__(self, r):
+        assert r > 0
         self.r = r
     def perimeter(self):
         return self.r * 2 * math.pi
@@ -83,7 +90,7 @@ def analyze_shapes(filepath):
                 if len(args) == count and all(val > 0 for val in args):
                     obj = ShapeClass(*args)
                     shapes.append({'name': name, 'args': args, 'p': obj.perimeter(), 'a': obj.area()})
-            except (ValueError, IndexError):
+            except (ValueError, IndexError, AssertionError):
                 pass
             i = j - 1
         i += 1

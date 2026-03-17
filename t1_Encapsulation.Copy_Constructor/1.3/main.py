@@ -48,6 +48,7 @@ class Circle:
         return self.r * 2 * math.pi
     def area(self):
         return math.pi * (self.r ** 2)
+
 # Словник для встановлення відповідності між словом в інпут файлі 
 # та классом в коді та кількістю аргументів для виклику методів
 SHAPES = {
@@ -70,14 +71,21 @@ def analyze_shapes(filepath):
             count, ShapeClass = SHAPES[name]
             # блок try except, якщо зустрінуться у файлі недопустимі символи\слова
             try:
-                args = list(map(float, tokens[i+1 : i+1+count]))
-                if len(args) == count:
+                args_tokens = []
+                j = i + 1
+                # Цикл буде додавати ВСЕ до args, поки не знайде назву фігури
+                while j < len(tokens) and tokens[j] not in SHAPES:
+                    args_tokens.append(tokens[j])
+                    j += 1
+                
+                args = list(map(float, args_tokens))
+                # Перевірка "> 0" для довжин та перевірка кількості параметрів для певної фігури
+                if len(args) == count and all(val > 0 for val in args):
                     obj = ShapeClass(*args)
                     shapes.append({'name': name, 'args': args, 'p': obj.perimeter(), 'a': obj.area()})
             except (ValueError, IndexError):
                 pass
-            
-            i += count
+            i = j - 1
         i += 1
     
     if not shapes: return
@@ -88,6 +96,7 @@ def analyze_shapes(filepath):
     print(f"Файл: {filepath}")
     print(f" Макс периметр: {max_p['name']} {max_p['args']} -> {max_p['p']:.2f}")
     print(f" Макс площадь: {max_a['name']} {max_a['args']} -> {max_a['a']:.2f}\n")
+
 # Виконує код для всіх файлів, які починаються на input та закінчуються на .txt
 for file in glob.glob("input*.txt"):
     analyze_shapes(file)

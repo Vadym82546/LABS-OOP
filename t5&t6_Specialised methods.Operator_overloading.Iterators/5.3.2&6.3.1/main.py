@@ -99,27 +99,75 @@ class Rational:
     def __repr__(self):
         return f"Rational('{self._n}/{self._d}')"
 
-# Функція для читання файлу та обчислень
-def process_file(filename):
-    try:
-        with open(filename, 'r') as file:
-            for line in file:
-                line = line.strip()
-                if not line:
-                    continue
-                
-                # Припускаємо, що у файлі записані вирази,
-                # які можна обчислити, маючи клас Rational в контексті.
-                # Для безпеки та гнучкості використовуємо eval з обмеженим scope.
-                try:
-                    result = eval(line, {"Rational": Rational, "math": math})
-                    print(f"Вираз: {line}")
-                    print(f"Результат: {result}")
-                    print("-" * 20)
-                except Exception as e:
-                    print(f"Помилка при обчисленні '{line}': {e}")
-    except FileNotFoundError:
-        print(f"Файл {filename} не знайдено.")
+class RationalList:
+    def __init__(self, elements=None):
+        self._elements = []
+        if elements:
+            for e in elements:
+                self.append(e)
+
+    def append(self, value):
+        if isinstance(value, int):
+            value = Rational(value, 1)
+        if not isinstance(value, Rational):
+            raise TypeError("Елементом списку може бути лише Rational або int")
+        self._elements.append(value)
+
+    def __len__(self):
+        return len(self._elements)
+
+    def __getitem__(self, index):
+        return self._elements[index]
+
+    def __setitem__(self, index, value):
+        if isinstance(value, int):
+            value = Rational(value, 1)
+        if not isinstance(value, Rational):
+            raise TypeError("Елементом списку може бути лише Rational або int")
+        self._elements[index] = value
+
+    def __add__(self, other):
+        new_list = RationalList(self._elements)
+        if isinstance(other, RationalList):
+            for e in other._elements:
+                new_list.append(e)
+        elif isinstance(other, (Rational, int)):
+            new_list.append(other)
+        else:
+            return NotImplemented
+        return new_list
+
+    def __iadd__(self, other):
+        if isinstance(other, RationalList):
+            for e in other._elements:
+                self.append(e)
+        elif isinstance(other, (Rational, int)):
+            self.append(other)
+        else:
+            return NotImplemented
+        return self
+
+    def __iter__(self):
+        # Сортування: за знаменником (спадання), потім за чисельником (спадання)
+        sorted_elements = sorted(self._elements, key=lambda r: (-r['d'], -r['n']))
+        return iter(sorted_elements)
+
+    def __str__(self):
+        return "[" + ", ".join(str(e) for e in self._elements) + "]"
 
 if __name__ == "__main__":
-    process_file("input01.txt")
+    for i in [1, 2, 3]:
+        file = "input0" + str(i) + ".txt"
+        rational_list = RationalList()
+        try:
+            with open(file, 'r') as f:
+                for line in f:
+                    for part in line.split():
+                        rational_list.append(Rational(part) if '/' in part else Rational(int(part), 1))
+            print("\nФайл input0" + str(i) + ".txt:")
+            print(f"\nСума послідовності: {sum(rational_list._elements, Rational(0, 1))}")
+            print("\nЕлементи списку (в порядку спадання знаменників):")
+            for r in rational_list:
+                print(r, end=" ")
+        except FileNotFoundError:
+            print(f"Файл {file} не знайдено.")
